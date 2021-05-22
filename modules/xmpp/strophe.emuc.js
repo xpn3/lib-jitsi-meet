@@ -42,6 +42,8 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
             'message', null, null);
         this.connection.addHandler(this.onMute.bind(this),
             'http://jitsi.org/jitmeet/audio', 'iq', 'set', null, null);
+        this.connection.addHandler(this.onSchisming.bind(this),
+            'http://jitsi.org/jitmeet/schisming', 'iq', 'set', null, null);
     }
 
     /**
@@ -173,6 +175,22 @@ export default class MucConnectionPlugin extends ConnectionPluginListenable {
 
         room.onMute(iq);
 
+        return true;
+    }
+
+    /**
+     * @param iq
+     */
+    onSchisming(iq) {
+        const from = iq.getAttribute('from');
+        const room = this.rooms[Strophe.getBareJidFromJid(from)];
+
+        // Returning false would result in the listener being deregistered by Strophe
+        if (!room) {
+            return true;
+        }
+
+        room.onSchisming(iq);
         return true;
     }
 }

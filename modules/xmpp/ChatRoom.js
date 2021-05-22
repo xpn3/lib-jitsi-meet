@@ -1709,6 +1709,19 @@ export default class ChatRoom extends Listenable {
     }
 
     /**
+     * @param iq
+     */
+    onSchisming(iq) {
+        const from = iq.getAttribute('from');
+
+        if (from !== this.focusMucJid) {
+            logger.warn('Ignored schisming from non focus peer');
+            return;
+        }
+        // TODO emit event
+    }
+
+    /**
      * Clean any listeners or resources, executed on leaving.
      */
     clean() {
