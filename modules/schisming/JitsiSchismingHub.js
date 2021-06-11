@@ -4,7 +4,10 @@ import { getLogger } from 'jitsi-meet-logger';
 const logger = getLogger(__filename);
 
 export default class JitsiSchismingHub {
-    constructor() {
+    /**
+     * JitsiSchismingHub constructor
+     */
+    constructor(conference) {
         this._schismingGroupByParticipantJid = {};
     }
 
@@ -22,33 +25,25 @@ export default class JitsiSchismingHub {
     }
 
     /**
-     * Adjusts volume of participants in other schisming groups
-     * @param newVolumeLevel {Number}
+     * Gets the participants that are in other schisming groups than the participant with thisParticipantJid.
      * @param thisParticipantJid {Jid} The Jid of the participant executing this function.
-     * @param otherParticipants {Array<JitsiParticipant>} Array of other participants of this conference.
+     * @param otherParticipants {Array<JitsiParticipant>} Array of other participants in this conference.
+     * @returns {Array<JitsiParticipant>} Participants that are in different schisming groups than the participant with thisParticipantJid.
      */
-    adjustVolume(newVolumeLevel, thisParticipantJid, otherParticipants) {
-        logger.info('adjustVolume called with newVolumeLevel=' + newVolumeLevel
-            + ', thisParticipantJid=' + thisParticipantJid + ', otherParticipants=' + otherParticipants);
-
+    getParticipantsOfOtherSchismingGroups(thisParticipantJid, otherParticipants) {
         this._setTestState(thisParticipantJid, otherParticipants); // TODO remove as soon as Jicofo is able to send SchismingHub
 
         var thisGroupId = this._getSchismingGroupIdForParticipant(thisParticipantJid);
         logger.info('Schisming group id for caller: ' + thisGroupId);
+        var participantsOfOtherSchismingGroups = [];
 
         for(var i = 0; i < otherParticipants.length; i++) {
             var participantGroupId = this._getSchismingGroupIdForParticipant(otherParticipants[i].getJid());
             if(participantGroupId != thisGroupId) {
-                this._adjustVolumeForParticipant(newVolumeLevel, otherParticipants[i]);
+                participantsOfOtherSchismingGroups.push(otherParticipants[i]);
             }
         }
-    }
-
-    _adjustVolumeForParticipant(newVolumeLevel, participant) {
-        logger.info('Adjusting volume of participant ' + participant.getJid() + ' to ' + newVolumeLevel);
-        // TODO probably need to get JitsiParticipant from JitsiConference
-        // TODO get track for participant
-        // TODO set volume on track
+        return participantsOfOtherSchismingGroups;
     }
 
     _getSchismingGroupIdForParticipant(participantJid) {
