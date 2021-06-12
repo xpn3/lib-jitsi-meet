@@ -11,17 +11,40 @@ export default class JitsiSchismingHub {
         this._schismingGroupByParticipantJid = {};
     }
 
-    _setTestState(thisParticipantJid, otherParticipants) {
-        this._schismingGroupByParticipantJid[thisParticipantJid] = '1';
-        if(otherParticipants.length >= 1) {
-            this._schismingGroupByParticipantJid[otherParticipants[0].getJid()] = '2';
+    /**
+     * Replaces current state of JitsiSchismingHub with a new state.
+     * @param newState {HTMLCollection} State in the form of:
+     *        <schisminghub>
+     *            <group id='1'>
+     *                <participant id='room1@example.com/alicesId'></participant>
+     *            </group>
+     *            <group id='2'>
+     *                <participant id='room1@example.com/bobsId'></participant>
+     *                <participant id='room1@example.com/charliesId'></participant>
+     *            </group>
+     *        </schisminghub>
+     */
+    replaceState(newState) {
+        if(!newState) {
+            return;
         }
-        if(otherParticipants.length >= 2) {
-            this._schismingGroupByParticipantJid[otherParticipants[1].getJid()] = '1';
+        this._schismingGroupByParticipantJid = this._parseStateXml(newState);
+        logger.info('Replaced state of JitsiSchismingHub');
+    }
+
+    _parseStateXml(schismingHubState) {
+        var groupByParticipantJid = {};
+        const groups = schismingHubState.getElementsByTagName('group');
+
+        for(var i = 0; i < groups.length; i++) {
+        	logger.info('group id =' + groups[i].getAttribute('id'));
+            var participants = groups[i].getElementsByTagName('participant');
+            for(var j = 0; j < participants.length; j++) {
+            	logger.info('participant id = ' + participants[j].getAttribute('id'));
+            	groupByParticipantJid[participants[j].getAttribute('id')] = groups[i].getAttribute('id');
+            }
         }
-        if(otherParticipants.length >= 3) {
-            this._schismingGroupByParticipantJid[otherParticipants[2].getJid()] = '2';
-        }
+        return groupByParticipantJid;
     }
 
     /**
@@ -31,7 +54,9 @@ export default class JitsiSchismingHub {
      * @returns {Array<JitsiParticipant>} Participants that are in different schisming groups than the participant with thisParticipantJid.
      */
     getParticipantsOfOtherSchismingGroups(thisParticipantJid, otherParticipants) {
-        this._setTestState(thisParticipantJid, otherParticipants); // TODO remove as soon as Jicofo is able to send SchismingHub
+        if(!this._getSchismingGroupIdForParticipant) {
+            return;
+        }
 
         var thisGroupId = this._getSchismingGroupIdForParticipant(thisParticipantJid);
         logger.info('Schisming group id for caller: ' + thisGroupId);

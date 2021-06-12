@@ -64,6 +64,7 @@ import {
     createP2PEvent
 } from './service/statistics/AnalyticsEvents';
 import * as XMPPEvents from './service/xmpp/XMPPEvents';
+import * as SchismingEvents from './service/schisming/SchismingEvents';
 import JitsiSchismingHub from './modules/schisming/JitsiSchismingHub';
 
 const logger = getLogger(__filename);
@@ -251,8 +252,6 @@ export default function JitsiConference(options) {
 
         this._e2eEncryption = new E2EEncryption(this);
     }
-
-    this._schismingHub = new JitsiSchismingHub();
 }
 
 // FIXME convert JitsiConference to ES6 - ASAP !
@@ -487,6 +486,10 @@ JitsiConference.prototype._init = function(options = {}) {
         this.setLocalParticipantProperty(
             'region', config.deploymentInfo.userRegion);
     }
+
+    // Initializes JitsiSchismingHub and adds listeners to SchismingEvents
+    this._schismingHub = new JitsiSchismingHub();
+    this.room.addListener(SchismingEvents.HUB_STATE_CHANGED, this._schismingHub.replaceState.bind(this._schismingHub));
 };
 
 /**

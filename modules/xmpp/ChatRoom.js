@@ -7,6 +7,7 @@ import { $iq, $msg, $pres, Strophe } from 'strophe.js';
 import * as JitsiTranscriptionStatus from '../../JitsiTranscriptionStatus';
 import * as MediaType from '../../service/RTC/MediaType';
 import XMPPEvents from '../../service/xmpp/XMPPEvents';
+import SchismingEvents from '../../service/schisming/SchismingEvents';
 import GlobalOnErrorHandler from '../util/GlobalOnErrorHandler';
 import Listenable from '../util/Listenable';
 
@@ -1709,7 +1710,19 @@ export default class ChatRoom extends Listenable {
     }
 
     /**
-     * @param iq
+     * Listener method responsible for processing incoming SchismingIqs from Jicofo
+     * @param iq {SchismingIq} SchismingIq with new state of SchismingHub in the form of:
+     *        <iq id='123' from='room1@example.com/focusId to='room1@example.com/thisParticipantsId'>'
+     *            <schisminghub>
+     *                <group id='1'>
+     *                    <participant id='room1@example.com/alicesId'></participant>
+     *                </group>
+     *                <group id='2'>
+     *                    <participant id='room1@example.com/bobsId'></participant>
+     *                    <participant id='room1@example.com/charliesId'></participant>
+     *                </group>
+     *            </schisminghub>
+     *        </iq>
      */
     onSchisming(iq) {
         const from = iq.getAttribute('from');
@@ -1718,7 +1731,10 @@ export default class ChatRoom extends Listenable {
             logger.warn('Ignored schisming from non focus peer');
             return;
         }
-        // TODO emit event
+
+        const schismingHubState = iq.getElementsByTagName('schisminghub')[0];
+        logger.info('Emitting SchismingEvents.HUB_STATE_CHANGED');
+        this.eventEmitter.emit(SchismingEvents.HUB_STATE_CHANGED, schismingHubState);
     }
 
     /**
