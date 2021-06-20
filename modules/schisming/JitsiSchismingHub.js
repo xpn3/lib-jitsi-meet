@@ -9,6 +9,13 @@ export default class JitsiSchismingHub {
      */
     constructor(conference) {
         this._schismingGroupByParticipantJid = {};
+
+        this.replaceState = this.replaceState.bind(this);
+        this._parseStateXml = this._parseStateXml.bind(this);
+        this.getParticipantsByGroupIds = this.getParticipantsByGroupIds.bind(this);
+        this.getParticipantsOfOtherSchismingGroups = this.getParticipantsOfOtherSchismingGroups.bind(this);
+        this.getSchismingGroupIdForParticipant = this.getSchismingGroupIdForParticipant.bind(this);
+        this._hasParticipants = this._hasParticipants.bind(this);
     }
 
     /**
@@ -47,6 +54,29 @@ export default class JitsiSchismingHub {
         return groupByParticipantJid;
     }
 
+    getParticipantsByGroupIds(allParticipants) {
+        logger.info('>>> reached getParticipantsByGroupIds');
+        var participantsByGroupIds = {};
+        if(!this._hasParticipants()) {
+            return participantsByGroupIds;
+        }
+
+        for(var i = 0; i < allParticipants.length; i++) {
+            logger.info('>>> reached start for with i ' + i);
+            var participant = allParticipants[i];
+            var groupId = this.getSchismingGroupIdForParticipant(participant.getJid());
+            if(participantsByGroupIds[groupId] == null) {
+                logger.info('>>> reached participantsByGroupIds(groupId) == undefined');
+                participantsByGroupIds[groupId] = [];
+            }
+            logger.info('>>> reached bfore participantsByGroupIds(groupId).push(allParticipants[i])');
+            participantsByGroupIds[groupId].push(allParticipants[i]);
+            logger.info('>>> reached end for with i ' + i);
+        }
+        logger.info('>>> reached before return participantsByGroupIds');
+        return participantsByGroupIds;
+    }
+
     /**
      * Gets the participants that are in other schisming groups than the participant with thisParticipantJid.
      * @param thisParticipantJid {Jid} The Jid of the participant executing this function.
@@ -54,16 +84,16 @@ export default class JitsiSchismingHub {
      * @returns {Array<JitsiParticipant>} Participants that are in different schisming groups than the participant with thisParticipantJid.
      */
     getParticipantsOfOtherSchismingGroups(thisParticipantJid, otherParticipants) {
-        if(!this._getSchismingGroupIdForParticipant) {
-            return;
+        var participantsOfOtherSchismingGroups = [];
+        if(!this._hasParticipants()) {
+            return participantsOfOtherSchismingGroups;
         }
 
-        var thisGroupId = this._getSchismingGroupIdForParticipant(thisParticipantJid);
+        var thisGroupId = this.getSchismingGroupIdForParticipant(thisParticipantJid);
         logger.info('Schisming group id for caller: ' + thisGroupId);
-        var participantsOfOtherSchismingGroups = [];
 
         for(var i = 0; i < otherParticipants.length; i++) {
-            var participantGroupId = this._getSchismingGroupIdForParticipant(otherParticipants[i].getJid());
+            var participantGroupId = this.getSchismingGroupIdForParticipant(otherParticipants[i].getJid());
             if(participantGroupId != thisGroupId) {
                 participantsOfOtherSchismingGroups.push(otherParticipants[i]);
             }
@@ -71,7 +101,11 @@ export default class JitsiSchismingHub {
         return participantsOfOtherSchismingGroups;
     }
 
-    _getSchismingGroupIdForParticipant(participantJid) {
+    getSchismingGroupIdForParticipant(participantJid) {
         return this._schismingGroupByParticipantJid[participantJid];
+    }
+
+    _hasParticipants() {
+        return Object.keys(this._schismingGroupByParticipantJid).length > 0;
     }
 }
