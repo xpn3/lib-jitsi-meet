@@ -8,7 +8,7 @@ export default class JitsiSchismingHub {
      * JitsiSchismingHub constructor
      */
     constructor(conference) {
-        this._schismingGroupByParticipantJid = {};
+        this._schismingGroupByParticipantId = {};
 
         this.replaceState = this.replaceState.bind(this);
         this._parseStateXml = this._parseStateXml.bind(this);
@@ -35,12 +35,12 @@ export default class JitsiSchismingHub {
         if(!newState) {
             return;
         }
-        this._schismingGroupByParticipantJid = this._parseStateXml(newState);
+        this._schismingGroupByParticipantId = this._parseStateXml(newState);
         logger.info('Replaced state of JitsiSchismingHub');
     }
 
     _parseStateXml(schismingHubState) {
-        var groupByParticipantJid = {};
+        var groupByParticipantId = {};
         const groups = schismingHubState.getElementsByTagName('group');
 
         for(var i = 0; i < groups.length; i++) {
@@ -48,52 +48,47 @@ export default class JitsiSchismingHub {
             var participants = groups[i].getElementsByTagName('participant');
             for(var j = 0; j < participants.length; j++) {
             	logger.info('participant id = ' + participants[j].getAttribute('id'));
-            	groupByParticipantJid[participants[j].getAttribute('id')] = groups[i].getAttribute('id');
+            	groupByParticipantId[participants[j].getAttribute('id')] = groups[i].getAttribute('id');
             }
         }
-        return groupByParticipantJid;
+        return groupByParticipantId;
     }
 
     getParticipantsByGroupIds(allParticipants) {
-        logger.info('>>> reached getParticipantsByGroupIds');
         var participantsByGroupIds = {};
         if(!this._hasParticipants()) {
             return participantsByGroupIds;
         }
 
         for(var i = 0; i < allParticipants.length; i++) {
-            logger.info('>>> reached start for with i ' + i);
             var participant = allParticipants[i];
-            var groupId = this.getSchismingGroupIdForParticipant(participant.getJid());
+            var groupId = this.getSchismingGroupIdForParticipant(participant.getId());
             if(participantsByGroupIds[groupId] == null) {
-                logger.info('>>> reached participantsByGroupIds(groupId) == undefined');
                 participantsByGroupIds[groupId] = [];
             }
-            logger.info('>>> reached bfore participantsByGroupIds(groupId).push(allParticipants[i])');
+            logger.info('Adds participant (id=' + participant.getId() + ' and groupId=' + groupId + ') to participantsByGroupIds.');
             participantsByGroupIds[groupId].push(allParticipants[i]);
-            logger.info('>>> reached end for with i ' + i);
         }
-        logger.info('>>> reached before return participantsByGroupIds');
         return participantsByGroupIds;
     }
 
     /**
-     * Gets the participants that are in other schisming groups than the participant with thisParticipantJid.
-     * @param thisParticipantJid {Jid} The Jid of the participant executing this function.
+     * Gets the participants that are in other schisming groups than the participant with thisParticipantId.
+     * @param thisParticipantId {Id} The Id of the participant executing this function.
      * @param otherParticipants {Array<JitsiParticipant>} Array of other participants in this conference.
      * @returns {Array<JitsiParticipant>} Participants that are in different schisming groups than the participant with thisParticipantJid.
      */
-    getParticipantsOfOtherSchismingGroups(thisParticipantJid, otherParticipants) {
+    getParticipantsOfOtherSchismingGroups(thisParticipantId, otherParticipants) {
         var participantsOfOtherSchismingGroups = [];
         if(!this._hasParticipants()) {
             return participantsOfOtherSchismingGroups;
         }
 
-        var thisGroupId = this.getSchismingGroupIdForParticipant(thisParticipantJid);
+        var thisGroupId = this.getSchismingGroupIdForParticipant(thisParticipantId);
         logger.info('Schisming group id for caller: ' + thisGroupId);
 
         for(var i = 0; i < otherParticipants.length; i++) {
-            var participantGroupId = this.getSchismingGroupIdForParticipant(otherParticipants[i].getJid());
+            var participantGroupId = this.getSchismingGroupIdForParticipant(otherParticipants[i].getId());
             if(participantGroupId != thisGroupId) {
                 participantsOfOtherSchismingGroups.push(otherParticipants[i]);
             }
@@ -101,11 +96,11 @@ export default class JitsiSchismingHub {
         return participantsOfOtherSchismingGroups;
     }
 
-    getSchismingGroupIdForParticipant(participantJid) {
-        return this._schismingGroupByParticipantJid[participantJid];
+    getSchismingGroupIdForParticipant(participantId) {
+        return this._schismingGroupByParticipantId[participantId];
     }
 
     _hasParticipants() {
-        return Object.keys(this._schismingGroupByParticipantJid).length > 0;
+        return Object.keys(this._schismingGroupByParticipantId).length > 0;
     }
 }
