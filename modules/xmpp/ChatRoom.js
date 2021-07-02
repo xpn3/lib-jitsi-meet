@@ -1733,8 +1733,8 @@ export default class ChatRoom extends Listenable {
         }
 
         const schismingHubState = iq.getElementsByTagName('schisminghub')[0];
-        logger.info('Emitting SchismingEvents.HUB_STATE_CHANGED');
-        this.eventEmitter.emit(SchismingEvents.HUB_STATE_CHANGED, schismingHubState);
+        logger.info('Emitting SchismingEvents.HUB_STATE_RECEIVED');
+        this.eventEmitter.emit(SchismingEvents.HUB_STATE_RECEIVED, schismingHubState);
     }
 
     /**

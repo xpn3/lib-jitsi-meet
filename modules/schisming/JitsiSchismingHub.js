@@ -1,13 +1,18 @@
 /* global __filename, module */
 import { getLogger } from 'jitsi-meet-logger';
 
+import Listenable from '../../modules/util/Listenable';
+import * as JitsiConferenceEvents from '../../JitsiConferenceEvents';
+
 const logger = getLogger(__filename);
 
-export default class JitsiSchismingHub {
+export default class JitsiSchismingHub extends Listenable {
     /**
      * JitsiSchismingHub constructor
      */
     constructor(conference) {
+        super();
+
         this._schismingGroupByParticipantId = {};
 
         this.replaceState = this.replaceState.bind(this);
@@ -37,6 +42,7 @@ export default class JitsiSchismingHub {
         }
         this._schismingGroupByParticipantId = this._parseStateXml(newState);
         logger.info('Replaced state of JitsiSchismingHub');
+        this.eventEmitter.emit(JitsiConferenceEvents.SCHISMINGHUB_STATE_CHANGED);
     }
 
     _parseStateXml(schismingHubState) {

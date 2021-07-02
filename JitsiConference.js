@@ -489,7 +489,7 @@ JitsiConference.prototype._init = function(options = {}) {
 
     // Initializes JitsiSchismingHub and adds listeners to SchismingEvents
     this._schismingHub = new JitsiSchismingHub();
-    this.room.addListener(SchismingEvents.HUB_STATE_CHANGED, this._schismingHub.replaceState.bind(this._schismingHub));
+    this.room.addListener(SchismingEvents.HUB_STATE_RECEIVED, this._schismingHub.replaceState.bind(this._schismingHub));
 };
 
 /**
