@@ -12,7 +12,7 @@ export default class JitsiSchismingHub {
 
         this.replaceState = this.replaceState.bind(this);
         this._parseStateXml = this._parseStateXml.bind(this);
-        this.getParticipantsByGroupIds = this.getParticipantsByGroupIds.bind(this);
+        this.getParticipantIdsByGroupId = this.getParticipantIdsByGroupId.bind(this);
         this.getParticipantsOfOtherSchismingGroups = this.getParticipantsOfOtherSchismingGroups.bind(this);
         this.getSchismingGroupIdForParticipant = this.getSchismingGroupIdForParticipant.bind(this);
         this._hasParticipants = this._hasParticipants.bind(this);
@@ -54,22 +54,18 @@ export default class JitsiSchismingHub {
         return groupByParticipantId;
     }
 
-    getParticipantsByGroupIds(allParticipants) {
-        var participantsByGroupIds = {};
-        if(!this._hasParticipants()) {
-            return participantsByGroupIds;
+    getParticipantIdsByGroupId() {
+        var participantIdsByGroupId = {};
+
+        for(const [participantId, groupId] of Object.entries(this._schismingGroupByParticipantId)) {
+            if(participantIdsByGroupId[groupId] == null) {
+                participantIdsByGroupId[groupId] = [];
+            }
+            logger.info('Adds participant (id=' + participantId + ' and groupId=' + groupId + ') to participantIdsByGroupId.');
+            participantIdsByGroupId[groupId].push(participantId);
         }
 
-        for(var i = 0; i < allParticipants.length; i++) {
-            var participant = allParticipants[i];
-            var groupId = this.getSchismingGroupIdForParticipant(participant.getId());
-            if(participantsByGroupIds[groupId] == null) {
-                participantsByGroupIds[groupId] = [];
-            }
-            logger.info('Adds participant (id=' + participant.getId() + ' and groupId=' + groupId + ') to participantsByGroupIds.');
-            participantsByGroupIds[groupId].push(allParticipants[i]);
-        }
-        return participantsByGroupIds;
+        return participantIdsByGroupId;
     }
 
     /**
