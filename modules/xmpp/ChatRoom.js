@@ -1726,6 +1726,7 @@ export default class ChatRoom extends Listenable {
      */
     onSchisming(iq) {
         const from = iq.getAttribute('from');
+        const to = iq.getAttribute('to');
 
         if (from !== this.focusMucJid) {
             logger.warn('Ignored schisming from non focus peer');
@@ -1734,7 +1735,7 @@ export default class ChatRoom extends Listenable {
 
         const schismingHubState = iq.getElementsByTagName('schisminghub')[0];
         logger.info('Emitting SchismingEvents.HUB_STATE_RECEIVED');
-        this.eventEmitter.emit(SchismingEvents.HUB_STATE_RECEIVED, schismingHubState);
+        this.eventEmitter.emit(SchismingEvents.HUB_STATE_RECEIVED, this.connection, from, to, schismingHubState);
     }
 
     /**
