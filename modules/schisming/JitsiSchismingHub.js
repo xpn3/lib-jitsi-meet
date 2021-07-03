@@ -1,17 +1,16 @@
 /* global __filename, module */
 import { getLogger } from 'jitsi-meet-logger';
 
-import Listenable from '../../modules/util/Listenable';
 import * as JitsiConferenceEvents from '../../JitsiConferenceEvents';
 
 const logger = getLogger(__filename);
 
-export default class JitsiSchismingHub extends Listenable {
+export default class JitsiSchismingHub {
     /**
      * JitsiSchismingHub constructor
      */
-    constructor(conference) {
-        super();
+    constructor(eventEmitter) {
+        this.eventEmitter = eventEmitter;
 
         this._schismingGroupByParticipantId = {};
 

@@ -368,4 +368,4 @@ export const LOBBY_USER_LEFT = 'conference.lobby.userLeft';
  * Indicates that the state of the JitsiSchismingHub has been changed.
  * Emitted by the JitsiSchismingHub after replacing the current state.
  */
-export const SCHISMINGHUB_STATE_CHANGED = 'conference.schisminghub_state_changed';
+export const SCHISMINGHUB_STATE_CHANGED = 'conference.schismingHubStateChanged';
