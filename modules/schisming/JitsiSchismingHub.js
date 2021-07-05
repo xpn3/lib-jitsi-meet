@@ -19,7 +19,7 @@ export default class JitsiSchismingHub {
 
         this.replaceState = this.replaceState.bind(this);
         this.getParticipantIdsByGroupId = this.getParticipantIdsByGroupId.bind(this);
-        this.getParticipantsOfOtherSchismingGroups = this.getParticipantsOfOtherSchismingGroups.bind(this);
+        this.getParticipantIdsOfOtherSchismingGroups = this.getParticipantIdsOfOtherSchismingGroups.bind(this);
         this.getSchismingGroupIdForParticipant = this.getSchismingGroupIdForParticipant.bind(this);
         this.joinOrLeaveGroup = this.joinOrLeaveGroup.bind(this);
     }
@@ -82,26 +82,26 @@ export default class JitsiSchismingHub {
 
     /**
      * Gets the participants that are in other schisming groups than the participant with thisParticipantId.
-     * @param thisParticipantId {Id} The Id of the participant executing this function.
-     * @param otherParticipants {Array<JitsiParticipant>} Array of other participants in this conference.
-     * @returns {Array<JitsiParticipant>} Participants that are in different schisming groups than the participant with thisParticipantJid.
+     * @param thisParticipantId {String} The Id of the participant executing this function.
+     * @returns {Array<String>} Ids of participants that are in different schisming groups than the participant with thisParticipantJid.
      */
-    getParticipantsOfOtherSchismingGroups(thisParticipantId, otherParticipants) {
-        var participantsOfOtherSchismingGroups = [];
+    getParticipantIdsOfOtherSchismingGroups(thisParticipantId) {
+        var participantIdsOfOtherSchismingGroups = [];
         if(!this._hasParticipants()) {
-            return participantsOfOtherSchismingGroups;
+            return participantIdsOfOtherSchismingGroups;
         }
 
         var thisGroupId = this.getSchismingGroupIdForParticipant(thisParticipantId);
         logger.info('Schisming group id for caller: ' + thisGroupId);
 
-        for(var i = 0; i < otherParticipants.length; i++) {
-            var participantGroupId = this.getSchismingGroupIdForParticipant(otherParticipants[i].getId());
-            if(participantGroupId != thisGroupId) {
-                participantsOfOtherSchismingGroups.push(otherParticipants[i]);
+        for(const [participantId, groupId] of Object.entries(this._schismingGroupByParticipantId)) {
+            if(groupId != thisGroupId) {
+                logger.info('Adding participant (' + participantId + ', ' + groupId + ') to participantIdsOfOtherSchismingGroups');
+                participantIdsOfOtherSchismingGroups.push(participantId);
             }
         }
-        return participantsOfOtherSchismingGroups;
+
+        return participantIdsOfOtherSchismingGroups;
     }
 
     getSchismingGroupIdForParticipant(participantId) {
